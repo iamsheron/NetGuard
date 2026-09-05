@@ -1,0 +1,7 @@
+customtkinter
+scapy
+python-dotenv
+requests
+reportlab
+Flask
+python-nmap

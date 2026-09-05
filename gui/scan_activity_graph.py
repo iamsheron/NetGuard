@@ -1,0 +1,612 @@
+import customtkinter as ctk
+import time
+import math
+
+
+class ScanActivityGraph(ctk.CTkFrame):
+
+    def __init__(self, parent, shared_state, theme):
+
+        super().__init__(
+            parent,
+            fg_color=theme.PANEL,
+            corner_radius=18
+        )
+
+        self.shared_state = shared_state
+        self.theme = theme
+
+        # Keep approximately 60 seconds of activity.
+        self.history = []
+
+        self.max_points = 60
+
+        self.wave_phase = 0.0
+        self.activity_level = 45.0
+
+        self.running = True
+
+        self.build_ui()
+
+        self.update_graph()
+
+    # ==========================================
+    # UI
+    # ==========================================
+
+    def build_ui(self):
+
+        header = ctk.CTkFrame(
+            self,
+            fg_color="transparent"
+        )
+
+        header.pack(
+            fill="x",
+            padx=18,
+            pady=(14, 4)
+        )
+
+        ctk.CTkLabel(
+            header,
+            text="◉ Scan Activity",
+            font=("Segoe UI", 16, "bold")
+        ).pack(side="left")
+
+        self.live_label = ctk.CTkLabel(
+            header,
+            text="● LIVE",
+            font=("Segoe UI", 11, "bold"),
+            text_color="#22C55E"
+        )
+
+        self.live_label.pack(side="right")
+
+        ctk.CTkLabel(
+            self,
+            text="Network Activity",
+            font=("Segoe UI", 10),
+            text_color="#9CA3AF"
+        ).pack(
+            anchor="w",
+            padx=18,
+            pady=(0, 5)
+        )
+
+        # ==========================================
+        # GRAPH
+        # ==========================================
+
+        self.canvas = ctk.CTkCanvas(
+            self,
+            height=180,
+            bg="#111827",
+            highlightthickness=0,
+            bd=0
+        )
+
+        self.canvas.pack(
+            fill="x",
+            padx=15,
+            pady=(0, 8)
+        )
+
+        # ==========================================
+        # STATISTICS
+        # ==========================================
+
+        stats = ctk.CTkFrame(
+            self,
+            fg_color="transparent"
+        )
+
+        stats.pack(
+            fill="x",
+            padx=15,
+            pady=(2, 12)
+        )
+
+        self.device_value = self.create_stat(
+            stats,
+            "DEVICES",
+            "#38BDF8"
+        )
+
+        self.port_value = self.create_stat(
+            stats,
+            "OPEN PORTS",
+            "#60A5FA"
+        )
+
+        self.alert_value = self.create_stat(
+            stats,
+            "ALERTS",
+            "#F87171"
+        )
+
+    # ==========================================
+    # STAT
+    # ==========================================
+
+    def create_stat(
+        self,
+        parent,
+        title,
+        color
+    ):
+
+        frame = ctk.CTkFrame(
+            parent,
+            fg_color="#111827",
+            corner_radius=10
+        )
+
+        frame.pack(
+            side="left",
+            fill="x",
+            expand=True,
+            padx=4
+        )
+
+        ctk.CTkLabel(
+            frame,
+            text=title,
+            font=("Segoe UI", 9, "bold"),
+            text_color="#9CA3AF"
+        ).pack(
+            pady=(7, 0)
+        )
+
+        value = ctk.CTkLabel(
+            frame,
+            text="0",
+            font=("Segoe UI", 18, "bold"),
+            text_color=color
+        )
+
+        value.pack(
+            pady=(0, 7)
+        )
+
+        return value
+
+    # ==========================================
+    # DATA
+    # ==========================================
+
+    def get_activity_value(self):
+
+        devices = getattr(
+            self.shared_state,
+            "devices",
+            []
+        )
+
+        alerts = getattr(
+            self.shared_state,
+            "alerts",
+            []
+        )
+
+        open_ports = 0
+
+        for device in devices:
+
+            ports = device.get(
+                "open_ports",
+                []
+            )
+
+            open_ports += len(ports)
+
+        device_count = len(devices)
+        alert_count = len(alerts)
+
+        # Current network state
+        current_state = (
+            device_count,
+            open_ports,
+            alert_count
+        )
+
+        # First sample
+        if not hasattr(self, "previous_state"):
+
+            self.previous_state = current_state
+
+            return (
+                device_count,
+                open_ports,
+                alert_count,
+                5
+            )
+
+        old_devices, old_ports, old_alerts = (
+            self.previous_state
+        )
+
+        # Detect actual changes
+        device_change = abs(
+            device_count - old_devices
+        )
+
+        port_change = abs(
+            open_ports - old_ports
+        )
+
+        alert_change = abs(
+            alert_count - old_alerts
+        )
+
+        # Activity generated by changes
+        event_activity = (
+            device_change * 20
+            + port_change * 5
+            + alert_change * 40
+         )
+
+         # Small baseline so the graph remains alive
+        baseline = 8
+
+        activity = baseline + event_activity
+
+        self.previous_state = current_state
+
+        return (
+            device_count,
+            open_ports,
+            alert_count,
+            activity
+        )
+
+    # ==========================================
+    # GRAPH
+    # ==========================================
+
+    def draw_graph(self):
+
+        self.canvas.delete("all")
+
+        width = self.canvas.winfo_width()
+        height = self.canvas.winfo_height()
+
+        if width < 100:
+            return
+
+        left = 38
+        right = width - 12
+        top = 12
+        bottom = height - 28
+
+        graph_width = right - left
+        graph_height = bottom - top
+
+        # ======================================
+        # GRID
+        # ======================================
+
+        for i in range(5):
+
+            y = (
+                top
+                + (graph_height / 4) * i
+            )
+
+            self.canvas.create_line(
+                left,
+                y,
+                right,
+                y,
+                fill="#1F2937",
+                width=1
+            )
+
+        # Vertical divisions.
+
+        for i in range(1, 5):
+
+            x = (
+                left
+                + (graph_width / 5) * i
+            )
+
+            self.canvas.create_line(
+                x,
+                top,
+                x,
+                bottom,
+                fill="#172033",
+                width=1
+            )
+
+        # ======================================
+        # Y LABELS
+        # ======================================
+
+        for value, position in [
+            ("100", 0),
+            ("75", 1),
+            ("50", 2),
+            ("25", 3),
+            ("0", 4)
+        ]:
+
+            y = (
+                top
+                + (graph_height / 4) * position
+            )
+
+            self.canvas.create_text(
+                20,
+                y,
+                text=value,
+                fill="#64748B",
+                font=("Segoe UI", 8)
+            )
+
+        # ======================================
+        # X LABELS
+        # ======================================
+
+        labels = [
+            "-60s",
+            "-45s",
+            "-30s",
+            "-15s",
+            "NOW"
+        ]
+
+        for i, label in enumerate(labels):
+
+            x = (
+                left
+                + (graph_width / 4) * i
+            )
+
+            self.canvas.create_text(
+                x,
+                height - 10,
+                text=label,
+                fill="#64748B",
+                font=("Segoe UI", 8)
+            )
+
+        # ======================================
+        # GRAPH DATA
+        # ======================================
+
+        if not self.history:
+            return
+
+        max_value = 100
+
+        points = []
+
+        for index, value in enumerate(
+            self.history
+        ):
+
+            if len(self.history) == 1:
+                x = right
+            else:
+                x = (
+                    left
+                    + (
+                        index
+                        / (
+                            len(self.history) - 1
+                        )
+                    )
+                    * graph_width
+                )
+
+            normalized = min(
+                value / max_value,
+                1
+            )
+
+            y = (
+                bottom
+                - normalized
+                * graph_height
+            )
+
+            points.extend(
+                [x, y]
+            )
+
+        # ======================================
+        # AREA
+        # ======================================
+
+        if len(points) >= 4:
+
+            area_points = list(points)
+
+            area_points.extend(
+                [
+                    points[-2],
+                    bottom,
+                    points[0],
+                    bottom
+                ]
+            )
+
+            self.canvas.create_polygon(
+                area_points,
+                fill="#0B2942",
+                outline=""
+            )
+
+        # ======================================
+        # MAIN LINE
+        # ======================================
+
+        if len(points) >= 4:
+
+            self.canvas.create_line(
+                points,
+                fill="#38BDF8",
+                width=2,
+                smooth=True
+            )
+
+        # ======================================
+        # CURRENT POINT
+        # ======================================
+
+        if len(points) >= 2:
+
+            x = points[-2]
+            y = points[-1]
+
+            self.canvas.create_oval(
+                x - 5,
+                y - 5,
+                x + 5,
+                y + 5,
+                fill="#38BDF8",
+                outline="#BAE6FD",
+                width=2
+            )
+
+            # NOW marker
+
+            self.canvas.create_line(
+                x,
+                top,
+                x,
+                bottom,
+                fill="#164E63",
+                dash=(3, 4)
+            )
+
+    # ==========================================
+    # UPDATE
+    # ==========================================
+
+    def update_graph(self):
+
+        if not self.running:
+            return
+
+        try:
+
+            (
+                device_count,
+                open_ports,
+                alert_count,
+                activity
+            ) = self.get_activity_value()
+
+        # ======================================
+        # REAL NETGUARD STATISTICS
+        # ======================================
+
+            self.device_value.configure(
+                text=str(device_count)
+            )
+
+            self.port_value.configure(
+                text=str(open_ports)
+            )
+
+            self.alert_value.configure(
+                text=str(alert_count)
+            )
+
+        # ======================================
+        # ACTIVITY TARGET
+        # ======================================
+
+            target = min(
+                45 + activity * 2,
+                85
+            )
+
+            # Smoothly move toward actual activity
+            self.activity_level += (
+                target - self.activity_level
+            ) * 0.08
+
+        # ======================================
+        # LIVE WAVEFORM
+        # ======================================
+
+            self.wave_phase += 0.25
+
+            wave = (
+                math.sin(self.wave_phase) * 14
+                + math.sin(self.wave_phase * 1.7) * 6
+            )
+
+            current_value = (
+                self.activity_level + wave
+            )
+
+            current_value = max(
+                5,
+                min(100, current_value)
+            )
+
+        # ======================================
+        # STORE GRAPH POINT
+        # ======================================
+
+            self.history.append(
+                current_value
+            )
+
+            if len(self.history) > self.max_points:
+
+                self.history.pop(0)
+
+        # ======================================
+        # DRAW
+        # ======================================
+
+            self.draw_graph()
+
+            self.pulse_live()
+
+        except Exception as e:
+
+            print(
+                "Scan activity graph error:",
+                e
+            )
+
+        # Smooth animation
+        self.after(
+            100,
+            self.update_graph
+        )
+    # ==========================================
+    # LIVE PULSE
+    # ==========================================
+
+    def pulse_live(self):
+
+        current = self.live_label.cget(
+            "text_color"
+        )
+
+        if current == "#22C55E":
+
+            self.live_label.configure(
+                text_color="#14532D"
+            )
+
+        else:
+
+            self.live_label.configure(
+                text_color="#22C55E"
+            )
+
+    # ==========================================
+    # STOP
+    # ==========================================
+
+    def stop(self):
+
+        self.running = False
