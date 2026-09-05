@@ -1,468 +1,411 @@
-\# NETGUARD
+# NETGUARD
 
+Windows desktop network security monitoring application built with Python.
 
+NETGUARD is designed to help users discover devices on a local network, inspect device information, detect suspicious ARP activity, scan ports, assess security risks, and receive security notifications through Telegram.
 
-\*\*NETGUARD\*\* is a Windows desktop network security monitoring application designed to help users discover devices on their local network, analyze network activity, identify potential risks, and receive security notifications.
+## Features
 
+* Network device discovery
+* Device identification and vendor lookup
+* MAC address and OUI lookup
+* ARP spoofing detection
+* Port scanning
+* Operating-system detection
+* Device risk analysis
+* Trusted-device management
+* Security alerts
+* SQLite-based local data storage
+* PDF security reports
+* Telegram security notifications
+* Telegram connection management
+* CustomTkinter desktop interface
+* Automated launcher for the Telegram webhook and application
 
+## Architecture
 
-\## Features
-
-
-
-\* 🔍 Network device discovery and scanning
-
-\* 🖥️ Device identification and device details
-
-\* 🏷️ Vendor/OUI-based device identification
-
-\* 🛡️ ARP-based network monitoring
-
-\* ⚠️ Risk analysis and rogue-device detection
-
-\* 🔌 Network port scanning
-
-\* 📊 Security dashboard and scan activity visualization
-
-\* 📄 Security report generation
-
-\* 📱 Telegram security notifications
-
-\* ☁️ Automatic Cloudflare Quick Tunnel integration for the Telegram server
-
-\* ⚙️ Configurable application settings
-
-\* 🧪 Automated tests for important components
-
-
-
-\## Architecture
-
-
-
-NETGUARD is organized into several main components:
-
-
+NETGUARD is a Windows desktop application with a Python GUI and several supporting services.
 
 ```text
-
-NETGUARD/
-
+NETGUARD
 │
-
 ├── launcher.py
-
+│   ├── Starts the local Telegram Flask server
+│   ├── Starts the Cloudflare Quick Tunnel
+│   ├── Detects the public tunnel URL
+│   ├── Configures the Telegram webhook
+│   └── Starts the main application
+│
 ├── main.py
-
-├── database.py
-
-├── arp\_detector.py
-
-├── device\_identifier.py
-
-├── device\_names.py
-
-├── pdf\_report.py
-
-├── stage1\_scan.py
-
-├── telegram\_notifier.py
-
-├── vendor\_database.py
-
-├── oui.csv
-
+│   └── Starts the NETGUARD desktop application
 │
-
-├── core/
-
-│   ├── shared\_state.py
-
-│   └── trusted\_devices.py
-
-│
-
 ├── gui/
-
 │   ├── app.py
-
 │   ├── dashboard.py
-
-│   ├── device\_details\_panel.py
-
-│   ├── device\_table.py
-
-│   ├── general\_tab.py
-
+│   ├── device_details_panel.py
+│   ├── device_table.py
+│   ├── general_tab.py
 │   ├── login.py
-
-│   ├── modern\_dialog.py
-
-│   ├── network\_status.py
-
-│   ├── ports\_tab.py
-
-│   ├── port\_scanner.py
-
-│   ├── scan\_activity\_graph.py
-
-│   ├── security\_center.py
-
-│   ├── security\_tab.py
-
-│   ├── settings\_page.py
-
-│   ├── stat\_card.py
-
+│   ├── modern_dialog.py
+│   ├── network_status.py
+│   ├── port_scanner.py
+│   ├── ports_tab.py
+│   ├── scan_activity_graph.py
+│   ├── security_center.py
+│   ├── security_tab.py
+│   ├── settings_page.py
+│   ├── stat_card.py
 │   └── theme.py
-
 │
-
 ├── services/
-
-│   ├── alert\_manager.py
-
-│   ├── network\_detector.py
-
-│   ├── notification\_manager.py
-
-│   ├── os\_detector.py
-
-│   └── risk\_analyzer.py
-
+│   ├── alert_manager.py
+│   ├── network_detector.py
+│   ├── notification_manager.py
+│   ├── os_detector.py
+│   └── risk_analyzer.py
 │
-
-├── telegram\_server/
-
+├── telegram_server/
 │   └── server.py
-
 │
-
-└── tests/
-
-&#x20;   ├── test\_arp\_detector.py
-
-&#x20;   ├── test\_os.py
-
-&#x20;   ├── test\_pdf\_report.py
-
-&#x20;   └── test\_telegram.py
-
+├── core/
+│   ├── shared_state.py
+│   └── trusted_devices.py
+│
+├── database.py
+├── arp_detector.py
+├── device_identifier.py
+├── device_names.py
+├── pdf_report.py
+├── stage1_scan.py
+├── telegram_notifier.py
+├── vendor_database.py
+├── oui.csv
+│
+└── test_*.py
 ```
 
-
-
-\## Requirements
-
-
-
-NETGUARD uses Python and the following third-party packages:
-
-
+### Runtime flow
 
 ```text
-
-customtkinter
-
-scapy
-
-python-dotenv
-
-requests
-
-reportlab
-
-Flask
-
-python-nmap
-
+User
+ │
+ ▼
+launcher.py
+ │
+ ├── Flask Telegram Server
+ │        │
+ │        ▼
+ │   Local webhook endpoint
+ │
+ ├── Cloudflare Quick Tunnel
+ │        │
+ │        ▼
+ │   Public HTTPS webhook
+ │
+ └── main.py
+          │
+          ▼
+       NETGUARD GUI
+          │
+          ├── Network Discovery
+          ├── ARP Monitoring
+          ├── Port Scanning
+          ├── OS Detection
+          ├── Risk Analysis
+          ├── Database
+          └── Telegram Notifications
 ```
 
+## Technology Stack
 
+### Programming Language
 
-The project also requires \*\*Nmap\*\* to be installed on Windows for the Nmap-based functionality.
+* Python
 
+### Desktop GUI
 
+* CustomTkinter
+* Tkinter
 
-\## Installation
+### Network Security
 
+* Scapy
+* ARP monitoring
+* Network discovery
+* Port scanning
+* Nmap
 
+### Database
 
-\### 1. Clone the repository
+* SQLite
 
+### Reporting
 
+* ReportLab
+
+### Notifications
+
+* Telegram Bot API
+* Requests
+
+### Webhook Server
+
+* Flask
+
+### Environment Configuration
+
+* python-dotenv
+
+### Public Tunnel
+
+* Cloudflare Quick Tunnel
+
+## Requirements
+
+NETGUARD is currently designed for Windows.
+
+You should have:
+
+* Windows 10 or Windows 11
+* Python 3.x
+* Nmap
+* Git
+* Internet access for Telegram and Cloudflare tunnel functionality
+
+Python dependencies are listed in:
+
+```text
+requirements.txt
+```
+
+## Installation
+
+### 1. Clone the repository
 
 ```powershell
-
-git clone <YOUR-GITHUB-REPOSITORY-URL>
-
+git clone https://github.com/srnnkl904-netizen/NetGuard.git
 cd NetGuard
-
 ```
 
-
-
-\### 2. Create a virtual environment
-
-
+### 2. Create a virtual environment
 
 ```powershell
-
 python -m venv .venv
-
 ```
-
-
 
 Activate it:
 
-
-
 ```powershell
-
-.venv\\Scripts\\Activate.ps1
-
+.venv\Scripts\Activate.ps1
 ```
 
+If PowerShell blocks script execution, you may need to adjust the execution policy for your user account.
 
-
-\### 3. Install dependencies
-
-
+### 3. Upgrade pip
 
 ```powershell
+python -m pip install --upgrade pip
+```
 
+### 4. Install Python dependencies
+
+```powershell
 pip install -r requirements.txt
-
 ```
 
+### 5. Install Nmap
 
+NETGUARD uses Nmap for operating-system detection.
 
-\### 4. Configure environment variables
+Nmap must be installed separately from the Python package.
 
-
-
-Create a local `.env` file:
-
-
-
-```text
-
-NETGUARD\_TELEGRAM\_TOKEN=YOUR\_TELEGRAM\_BOT\_TOKEN
-
-```
-
-
-
-\*\*Never commit `.env` to GitHub.\*\*
-
-
-
-The `.env` file is intentionally excluded by `.gitignore`.
-
-
-
-\## Running NETGUARD
-
-
-
-NETGUARD is launched through the automatic launcher:
-
-
+After installation, verify that Nmap is available:
 
 ```powershell
+nmap --version
+```
 
+The Python package `python-nmap` is only a Python interface to Nmap; it does not replace the Nmap executable.
+
+## Configuration
+
+NETGUARD uses environment variables for sensitive configuration.
+
+Create a local `.env` file in the project directory:
+
+```text
+NETGUARD_TELEGRAM_TOKEN=YOUR_BOT_TOKEN
+```
+
+Replace `YOUR_BOT_TOKEN` with the token provided by Telegram's BotFather.
+
+### Important
+
+Never commit `.env` to Git.
+
+The repository's `.gitignore` is configured to exclude the local environment file and other runtime-generated data.
+
+Do not publish your Telegram bot token, passwords, database files, or other private configuration files.
+
+## Running NETGUARD
+
+The recommended way to start the application is:
+
+```powershell
 python launcher.py
-
 ```
 
+The launcher coordinates the supporting services before starting the desktop interface.
 
-
-The launcher starts the required background components and then starts the NETGUARD desktop application.
-
-
-
-The launcher is responsible for coordinating the Telegram server and Cloudflare Quick Tunnel before starting the GUI.
-
-
-
-\## Telegram Notifications
-
-
-
-NETGUARD can send security alerts through Telegram.
-
-
-
-The Telegram integration uses:
-
-
-
-\* A Telegram bot
-
-\* The locally running NETGUARD Telegram server
-
-\* A dynamically generated Cloudflare Quick Tunnel
-
-\* A webhook connection between Telegram and the local server
-
-
-
-The Cloudflare tunnel URL is generated dynamically when NETGUARD starts. It is therefore \*\*not permanently hardcoded into the application\*\*.
-
-
-
-The current tunnel information is handled at runtime.
-
-
-
-\## Security
-
-
-
-Sensitive configuration should remain local.
-
-
-
-The following types of files are excluded from version control:
-
-
+The general startup sequence is:
 
 ```text
-
-.env
-
-\*.db
-
-\*.sqlite
-
-\*.sqlite3
-
-\*.log
-
-generated reports
-
-runtime tunnel information
-
-installation information
-
-Python cache files
-
-IDE configuration
-
+launcher.py
+    ↓
+Load environment configuration
+    ↓
+Start Flask Telegram server
+    ↓
+Start Cloudflare Quick Tunnel
+    ↓
+Detect public tunnel URL
+    ↓
+Configure Telegram webhook
+    ↓
+Start NETGUARD GUI
 ```
 
+## Telegram Notifications
 
+NETGUARD can send security notifications through Telegram.
 
-Never publish:
+The Telegram integration uses the following architecture:
 
+```text
+Telegram
+    │
+    ▼
+Telegram Bot API
+    │
+    ▼
+Cloudflare HTTPS Quick Tunnel
+    │
+    ▼
+Local Flask Server
+    │
+    ▼
+NETGUARD
+```
 
+The application stores Telegram connection information locally and uses a generated connection code when establishing a connection.
 
-\* Telegram bot tokens
+Telegram settings can be managed from the NETGUARD Settings page.
 
-\* API keys
+### Quick Tunnel limitation
 
-\* passwords
+NETGUARD currently uses a Cloudflare Quick Tunnel for development and testing.
 
-\* private credentials
+Quick Tunnel URLs are temporary and can change when the tunnel is restarted.
 
-\* local databases containing sensitive information
+The current Telegram architecture is intended primarily for local development/testing and a single active installation using the configured bot webhook.
 
-\* personal installation identifiers
+A production multi-user deployment would require a different architecture, such as a centralized backend or another webhook-routing design.
 
+## Security
 
+NETGUARD handles security-sensitive information such as:
 
-\## Testing
+* Telegram bot configuration
+* Local administrator credentials
+* Network device information
+* Security alerts
+* Local database records
 
+The application keeps sensitive configuration outside the source repository where possible.
 
+Administrator passwords are stored locally as password hashes rather than plain text.
 
-The project contains tests covering important components including:
+Users should still protect their local NETGUARD installation and never share:
 
+* `.env`
+* Telegram bot tokens
+* Local databases
+* Private configuration files
+* Generated security reports containing sensitive network information
 
+## Reports
 
-\* ARP detection
+NETGUARD can generate PDF security reports containing information collected during network monitoring and analysis.
 
-\* Operating-system detection
+Generated reports are runtime artifacts and should not normally be committed to the source repository.
 
-\* PDF report generation
+## Testing
 
-\* Telegram functionality
+The project contains Python test files for important components, including:
 
+* ARP detection
+* Operating-system detection
+* PDF report generation
+* Telegram notification functionality
 
-
-Run the test suite with:
-
-
+To run the tests, use:
 
 ```powershell
-
 python -m unittest discover
-
 ```
 
-
-
-Individual tests can also be executed directly, for example:
-
-
+Individual test files can also be executed directly, for example:
 
 ```powershell
-
-python test\_arp\_detector.py
-
+python test_arp_detector.py
 ```
 
+## Development
 
+A typical development workflow is:
 
-\## Reports
+```text
+Edit code
+   ↓
+Run tests
+   ↓
+Run NETGUARD
+   ↓
+Verify the feature
+   ↓
+Check Git status
+   ↓
+Commit changes
+   ↓
+Push to GitHub
+```
 
+## Project Status
 
+NETGUARD is an actively developed Windows desktop network-security monitoring project.
 
-NETGUARD can generate security reports containing information collected during network analysis.
+The current implementation focuses on local network monitoring, security analysis, reporting, and Telegram-based notifications.
 
+Future development may include:
 
+* Improved network visualization
+* Additional security detection techniques
+* More advanced reporting
+* Better deployment and packaging
+* Production-ready Telegram architecture
+* Additional automated tests
+* Improved cross-platform support
 
-Generated reports are treated as runtime artifacts and are not intended to be committed to the source repository.
+## Disclaimer
 
+NETGUARD is intended for defensive security monitoring and authorized network administration.
 
+Only use network discovery, scanning, ARP monitoring, and related security features on networks and systems that you own or are authorized to test.
 
-\## Project Status
+The authors are not responsible for misuse of the software.
 
+## License
 
+A license has not yet been selected for this project.
 
-NETGUARD is currently in a functional development stage with the primary desktop security-monitoring features implemented.
-
-
-
-The project is being prepared for public source-code publication and continued development.
-
-
-
-\## Disclaimer
-
-
-
-NETGUARD is intended for network monitoring and security analysis on networks and devices that you own or have permission to inspect.
-
-
-
-Only use network scanning, device discovery, port scanning, and monitoring features in authorized environments.
-
-
-
-\## License
-
-
-
-This project will be distributed under the license specified in the repository.
-
-
-
-\---
-
-
-
-\*\*NETGUARD — Local Network Security Monitoring\*\*
-
-
-
+If the project is later released under an open-source license, the appropriate license file and terms will be added to the repository.
