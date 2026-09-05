@@ -18,9 +18,6 @@ NETGUARD is designed to help users discover devices on a local network, inspect 
 * SQLite-based local data storage
 * PDF security reports
 * Telegram security notifications
-* Telegram connection management
-* CustomTkinter desktop interface
-* Automated launcher for the Telegram webhook and application
 
 ## Architecture
 
