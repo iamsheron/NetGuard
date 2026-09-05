@@ -393,7 +393,7 @@ Future development may include:
 * Additional automated tests
 * Improved cross-platform support
 
-Screenshots
+## Screenshots
 
 NETGUARD provides a desktop interface for monitoring network devices, reviewing
 security alerts, analyzing device risk, and configuring notifications.
