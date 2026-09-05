@@ -393,6 +393,38 @@ Future development may include:
 * Additional automated tests
 * Improved cross-platform support
 
+Screenshots
+
+NETGUARD provides a desktop interface for monitoring network devices, reviewing
+security alerts, analyzing device risk, and configuring notifications.
+
+1. Secure Login
+
+The NETGUARD login interface provides authenticated access to the application.
+
+
+
+2. Network Monitoring Dashboard
+
+The main dashboard provides an overview of discovered devices, online/offline
+status, security alerts, rogue-device detection, and device details.
+
+
+
+3. Security Center
+
+The Security Center provides network protection status, recent security alerts,
+risk information, and recommended actions for detected devices.
+
+
+
+4. Telegram Notifications
+
+NETGUARD can connect to Telegram to deliver security notifications when alerts
+are generated.
+
+
+
 ## Disclaimer
 
 NETGUARD is intended for defensive security monitoring and authorized network administration.
