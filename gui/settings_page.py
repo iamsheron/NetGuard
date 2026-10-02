@@ -4,6 +4,7 @@ import os
 import threading
 import urllib.request
 import urllib.error
+import urllib.parse
 
 from gui import theme
 from database import verify_user, change_password
@@ -481,6 +482,54 @@ class SettingsPage(ctk.CTkFrame):
         )
 
         thread.start()
+
+    def get_telegram_bot_username(self):
+        """
+        Get the Telegram bot username belonging to the configured bot token.
+        """
+
+        token = os.getenv("NETGUARD_TELEGRAM_TOKEN")
+
+        if not token:
+            raise Exception(
+                "NETGUARD_TELEGRAM_TOKEN is not configured"
+            )
+
+        url = (
+            f"https://api.telegram.org/bot{token}/getMe"
+        )
+
+        try:
+            with urllib.request.urlopen(
+                url,
+                timeout=10
+            ) as response:
+
+                data = json.loads(
+                    response.read().decode("utf-8")
+                )
+
+            if not data.get("ok"):
+                raise Exception(
+                    "Telegram bot token is invalid"
+                )
+
+            username = data.get(
+                "result",
+                {}
+            ).get("username")
+
+            if not username:
+                raise Exception(
+                    "Telegram bot username was not found"
+                )
+
+            return username
+
+        except Exception as e:
+            raise Exception(
+                f"Could not identify Telegram bot: {e}"
+            )
     def create_telegram_connection(self):
 
         server_url = self.get_telegram_server_url()
@@ -587,9 +636,11 @@ class SettingsPage(ctk.CTkFrame):
 
             import webbrowser
 
+            bot_username = self.get_telegram_bot_username()
+
             telegram_url = (
-                "https://t.me/NetGuardSecurityBot"
-                f"?start={code}"
+                f"https://t.me/{bot_username}"
+                f"?start={urllib.parse.quote(code)}"
             )
 
             webbrowser.open(telegram_url)
